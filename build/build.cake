@@ -1,6 +1,8 @@
 #addin "Cake.Powershell"
 #addin "Newtonsoft.Json"
 #tool "nuget:?package=ILRepack"
+#tool nuget:?package=GitVersion.CommandLine&version=4.0.0-beta0012
+#addin nuget:?package=Cake.Incubator&version=2.0.2
 
 // Helpers
 
@@ -9,10 +11,14 @@ Func<string, string> resolveDirectoryPath = (string source) => MakeAbsolute(Dire
 
 // Default target
 
+var gitVersion = GitVersion();
+
+Information(gitVersion.Dump());
+
 var target = Argument("target", "Default");
 var configuration = Argument("configuration", "Release");
-var version = Argument("versionnumber", "0.0.0");
-var versionbuild = Argument("versionbuild", "0");
+var version = gitVersion.MajorMinorPatch;
+var versionbuild = gitVersion.BuildMetaData;
 
 // Variables
 
@@ -78,7 +84,7 @@ Task("UpdateVersion")
                 InternalsVisibleTo = assemblyInfo.InternalsVisibleTo,
                 Version = string.Format("{0}.{1}", version, versionbuild),
                 FileVersion = string.Format("{0}.{1}", version, versionbuild),
-                InformationalVersion = string.Format("{0}-{1}", version, versionbuild),
+                InformationalVersion = gitVersion.InformationalVersion,
                 Copyright = assemblyInfo.Copyright,
                 Trademark = assemblyInfo.Trademark
             });
@@ -90,7 +96,7 @@ Task("UpdateVersion")
         foreach (var path in nuspecFiles)
         {
             Information("Nuspec: " + path);
-            XmlPoke(path, "/nuspec:package/nuspec:metadata/nuspec:version", version, new XmlPokeSettings {
+            XmlPoke(path, "/nuspec:package/nuspec:metadata/nuspec:version", gitVersion.NuGetVersion, new XmlPokeSettings {
                 Namespaces = new Dictionary<string, string> {
                     { "nuspec", "http://schemas.microsoft.com/packaging/2012/06/nuspec.xsd" }
                 }
@@ -160,14 +166,14 @@ Task("Build")
 Task("Pack")
     .Description("Packs library into different packages")
     .IsDependentOn("PackDotnet")
-    .IsDependentOn("PackNuget")
-    .IsDependentOn("PackVSTS");
+    .IsDependentOn("PackNuget");
+    //.IsDependentOn("PackVSTS");
 
 Task("PackDotnet")
     .Description("Packs library into zip package")
     .IsDependentOn("Build")
     .Does(() => {
-        Zip(paths.workingDirDotNet, System.IO.Path.Combine(paths.workingDirDotNet, "MagicChunks-" + version + ".zip"));
+        Zip(paths.workingDirDotNet, System.IO.Path.Combine(paths.workingDirDotNet, "MagicChunks-" + gitVersion.NuGetVersion + ".zip"));
     });
 
 Task("PackNuget")
@@ -185,7 +191,7 @@ Task("PackNuget")
         foreach (string file in System.IO.Directory.EnumerateFiles(paths.workingDirNuget, "*.nuspec"))
         {
             NuGetPack(file, new NuGetPackSettings {
-                Version = string.Format("{0}.{1}", version, versionbuild),
+                Version = gitVersion.NuGetVersion,
                 OutputDirectory = paths.workingDirNuget
             });
         }
