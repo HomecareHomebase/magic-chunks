@@ -110,3 +110,5 @@ artifacts/
 src/.vs
 working/
 build/tools/
+
+tools/*

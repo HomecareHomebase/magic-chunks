@@ -1,8 +1,8 @@
-#addin "Cake.Powershell"
-#addin "Newtonsoft.Json"
+// #addin "Cake.Powershell&version=0.4.8"
+#addin "Newtonsoft.Json&version=12.0.2"
 #tool "nuget:?package=ILRepack"
-#tool nuget:?package=GitVersion.CommandLine&version=4.0.0-beta0012
-#addin nuget:?package=Cake.Incubator&version=2.0.2
+#tool nuget:?package=GitVersion.CommandLine
+#addin nuget:?package=Cake.Incubator&version=5.1.0 
 
 // Helpers
 
@@ -23,18 +23,18 @@ var versionbuild = gitVersion.BuildMetaData;
 // Variables
 
 var paths = new {
-    root = resolveDirectoryPath("./../"),
+    root = resolveDirectoryPath("./"),
 
-    workingDir = resolveDirectoryPath("./../working/"),
-    workingDirSources = resolveDirectoryPath("./../working/sources/"),
-    workingDirDotNet = resolveDirectoryPath("./../working/dotnet/"),
-    workingDirNuget = resolveDirectoryPath("./../working/nuget/"),
-    workingDirVSTS = resolveDirectoryPath("./../working/vsts/"),
-    workingDirSolutionDir = resolveDirectoryPath("./../working/sources/src/"),
-    workingDirSolutionPath = resolveDirectoryPath("./../working/sources/src/MagicChunks.sln"),
+    workingDir = resolveDirectoryPath("./working/"),
+    workingDirSources = resolveDirectoryPath("./working/sources/"),
+    workingDirDotNet = resolveDirectoryPath("./working/dotnet/"),
+    workingDirNuget = resolveDirectoryPath("./working/nuget/"),
+    workingDirVSTS = resolveDirectoryPath("./working/vsts/"),
+    workingDirSolutionDir = resolveDirectoryPath("./working/sources/src/"),
+    workingDirSolutionPath = resolveDirectoryPath("./working/sources/src/MagicChunks.sln"),
 
-    solutionDir = resolveDirectoryPath("./../src/"),
-    solutionPath = resolveDirectoryPath("./../src/MagicChunks.sln"),
+    solutionDir = resolveDirectoryPath("./src/"),
+    solutionPath = resolveDirectoryPath("./src/MagicChunks.sln"),
 };
 
 // Tasks
@@ -202,12 +202,12 @@ Task("PackVSTS")
     .IsDependentOn("Build")
     .Does(() => {
 
-        CopyDirectory(paths.workingDirSolutionDir + "/MagicChunks/VSTS", paths.workingDirVSTS);
-        CopyFiles(paths.workingDirDotNet + "/**/*.dll", paths.workingDirVSTS + "/MagicChunks");
+        // CopyDirectory(paths.workingDirSolutionDir + "/MagicChunks/VSTS", paths.workingDirVSTS);
+        // CopyFiles(paths.workingDirDotNet + "/**/*.dll", paths.workingDirVSTS + "/MagicChunks");
 
-        StartPowershellFile(paths.workingDirVSTS + "/_build.ps1", new PowershellSettings {
-            WorkingDirectory = paths.workingDirVSTS
-        }.SetLogOutput());
+        // StartPowershellFile(paths.workingDirVSTS + "/_build.ps1", new PowershellSettings {
+        //     WorkingDirectory = paths.workingDirVSTS
+        // }.SetLogOutput());
     });
 
 
